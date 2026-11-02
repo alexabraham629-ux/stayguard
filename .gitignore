@@ -1,0 +1,28 @@
+# Python / tooling
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+*.egg-info/
+dist/
+build/
+
+# Secrets — never commit a real key (.env.example is committed instead)
+.env
+
+# Data: rebuilt by `make data`; only a small sample of raw CSVs is committed
+data/raw/*
+!data/raw/.gitkeep
+!data/raw/sample/
+data/*.duckdb
+data/*.duckdb.wal
+data/exports/*
+!data/exports/.gitkeep
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

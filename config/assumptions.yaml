@@ -1,0 +1,55 @@
+# StayGuard business assumptions — the ONE place for numbers that are judgement calls.
+# Code must read these values; never hard-code them elsewhere (CLAUDE.md §14).
+# Every value here is an ASSUMPTION for a synthetic portfolio dataset, not real company data.
+
+project:
+  seed: 20261031                 # global RNG seed; the generator must be deterministic
+  snapshot_date: "2026-10-31"    # "today" inside the data
+  synthetic_data_label: "Synthetic data — portfolio project"
+
+intakes:
+  # name: first day of term (move-in reference date)
+  Sep-2024: "2024-09-16"
+  Jan-2025: "2025-01-13"
+  Sep-2025: "2025-09-15"
+  Jan-2026: "2026-01-12"
+  Sep-2026: "2026-09-14"
+  Jan-2027: "2027-01-11"         # still open at snapshot -> scored and acted on
+
+model_split:
+  train_intakes: [Sep-2024, Jan-2025, Sep-2025, Jan-2026]
+  validation_intakes: [Sep-2026]
+  score_intakes: [Jan-2027]
+
+volumes:
+  leads_target: 60000
+  bookings_target: 18000
+  max_generation_seconds: 60
+
+currency:
+  reporting_currency: GBP
+  # Fixed rates for the whole period (ADR-009). Assumption, not market data.
+  fx_to_gbp:
+    GBP: 1.00
+    AUD: 0.51
+    EUR: 0.85
+
+commission:
+  # Commission rate earned from operators, by operator type. ASSUMPTION (CLAUDE.md §5: 8–14%).
+  rate_by_operator_type:
+    PBSA chain: 0.08
+    independent PBSA: 0.11
+    HMO: 0.14
+
+operations:
+  intervention_save_rate: 0.25   # share of at-risk revenue saved when an agent works a booking. ASSUMPTION.
+  queue_top_share: 0.20          # model business metric: team works the top 20% of the queue
+  late_first_response_minutes: 240
+
+ai:
+  verification_tolerance: 0.005  # 0.5% relative tolerance for canonical metric match
+  query_row_limit: 1000
+  query_timeout_seconds: 10
+  session_rate_limit: 20         # max AI requests per browser session when a key is present
+
+# Planted ground-truth effect sizes (CLAUDE.md §4) are added in Phase 2.

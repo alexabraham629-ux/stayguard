@@ -1,0 +1,50 @@
+[project]
+name = "stayguard"
+version = "0.1.0"
+description = "StayGuard: booking-risk copilot for student-housing marketplaces (synthetic data, portfolio project)."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+authors = [{ name = "Alex Abraham" }]
+dependencies = [
+    "anthropic>=2.3.0",
+    "duckdb>=2.0.0",
+    "faker>=40.44.0",
+    "mcp>=2.3.0",
+    "numpy>=2.5.4",
+    "pandas>=3.1.0",
+    "plotly>=7.1.0",
+    "python-dotenv>=1.2.4",
+    "pyyaml>=6.0.3",
+    "scikit-learn>=1.9.1",
+    "sqlglot>=30.27.0",
+    "streamlit>=1.66.1",
+]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.4.0",
+    "pytest>=9.2.0",
+    "ruff>=0.17.3",
+]
+
+[build-system]
+requires = ["uv_build>=0.13,<0.14"]
+build-backend = "uv_build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests", "app", "mcp_server"]
+
+[tool.ruff.lint]
+# E/W pycodestyle, F pyflakes, I isort, UP pyupgrade, B bugbear, SIM simplify, ANN type hints
+select = ["E", "W", "F", "I", "UP", "B", "SIM", "ANN"]
+ignore = ["ANN401"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["ANN"]
+"notebooks/**" = ["ANN", "E402"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
