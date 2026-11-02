@@ -118,6 +118,14 @@ def build_properties(rng: np.random.Generator, cities: pd.DataFrame) -> pd.DataF
     return df
 
 
+def _agent_name(fake: Faker) -> str:
+    """Faker name, never containing a reserved brand word (CLAUDE.md branding rule)."""
+    while True:
+        name = f"{fake.first_name()} {fake.last_name()}"
+        if not any(word.lower() in name.lower() for word in ref.RESERVED_NAME_WORDS):
+            return name
+
+
 def build_agents(
     rng: np.random.Generator, seed: int, overload: dict[str, Any]
 ) -> tuple[pd.DataFrame, list[int]]:
@@ -134,7 +142,7 @@ def build_agents(
             extra = rng.choice(ref.AGENT_LANGUAGES, size=int(rng.integers(0, 3)), replace=False)
             rows.append(
                 {
-                    "agent_name": f"{fake.first_name()} {fake.last_name()}",
+                    "agent_name": _agent_name(fake),
                     "team": team,
                     "languages": ", ".join(["English", *sorted(extra)]),
                     "hire_date": (

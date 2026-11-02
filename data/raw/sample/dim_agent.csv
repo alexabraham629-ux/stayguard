@@ -21,10 +21,10 @@ agent_id,agent_name,team,languages,hire_date,max_daily_capacity
 20,Christopher Roberts,ANZ,English,2019-12-10,26
 21,Miguel Snow,ANZ,"English, Arabic, Mandarin",2019-09-21,38
 22,James Cooper,ANZ,English,2019-08-21,30
-23,Amber Smith,ANZ,English,2022-11-29,34
-24,Lisa Butler,ANZ,"English, Cantonese, Mandarin",2020-08-13,26
-25,James Aguilar,ANZ,"English, Yoruba",2022-05-15,39
-26,Jeff Cox,ANZ,English,2019-08-21,38
+23,Lisa Butler,ANZ,English,2022-11-29,34
+24,James Aguilar,ANZ,"English, Cantonese, Mandarin",2020-08-13,26
+25,Jeff Cox,ANZ,"English, Yoruba",2022-05-15,39
+26,Robert Edwards,ANZ,English,2019-08-21,38
 27,Ashley Guerin,Ireland,English,2019-04-01,39
 28,Aodhan Richie,Ireland,English,2022-01-03,35
 29,Joel Farell,Ireland,English,2022-07-08,38

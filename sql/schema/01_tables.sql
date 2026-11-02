@@ -9,6 +9,13 @@ CREATE TABLE meta_build (
     generator_version  VARCHAR NOT NULL
 );
 
+-- Analysis assumptions from config/assumptions.yaml, so SQL reads them instead of hard-coding.
+CREATE TABLE meta_assumption (
+    name         VARCHAR PRIMARY KEY,
+    value        DOUBLE  NOT NULL,
+    description  VARCHAR NOT NULL
+);
+
 CREATE TABLE dim_intake (
     intake             VARCHAR PRIMARY KEY,          -- e.g. 'Sep-2026'
     intake_start_date  DATE    NOT NULL,             -- move-in reference date

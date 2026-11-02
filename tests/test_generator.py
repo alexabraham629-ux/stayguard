@@ -62,4 +62,12 @@ def test_status_matches_intake_state(generated):
 
 def test_university_names_are_fictional(generated):
     names = generated.tables["dim_university"]["name"]
-    assert not names.str.contains("Amber|University of ", regex=True).any()
+    assert not names.str.contains("University of ", regex=False).any()
+
+
+def test_no_brand_name_in_any_generated_text(generated):
+    """Branding rule (CLAUDE.md §0): the marketplace's name must not appear anywhere in the data."""
+    for name, df in generated.tables.items():
+        for col in df.select_dtypes(include=["object", "string"]).columns:
+            hits = df[col].astype(str).str.contains("amber", case=False)
+            assert not hits.any(), f"{name}.{col}: {df.loc[hits, col].head(3).tolist()}"

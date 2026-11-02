@@ -34,3 +34,13 @@ Format:
 - Fix: corrected to 3,617.
 - Lesson / guardrail added: docs are written from the final run only, and numbers are re-queried before
   commit. Phase 8 will add a test that checks the headline figures in the docs against the database.
+
+### 2026-11-03 — Generated data broke the branding rule ("Amber Smith")
+- What the AI produced: The generator used Faker for agent names without a guard, and one agent was named
+  "Amber Smith". CLAUDE.md forbids the marketplace's name anywhere in the app; it would have appeared on
+  the agent leaderboard.
+- How it was caught (manual review): reading the first rows of `06_agent_leaderboard` while checking every
+  query ran. The existing test only checked university names.
+- Fix: `_agent_name()` rejects names containing a reserved word (`reference.RESERVED_NAME_WORDS`).
+- Lesson / guardrail added: `test_no_brand_name_in_any_generated_text` scans every text column of every
+  generated table.

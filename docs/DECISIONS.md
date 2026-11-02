@@ -117,3 +117,21 @@ were agreed in Phase 0 (2026-11-03).
 - **Decision:** Students who will cancel get fewer positive interaction outcomes (38% vs 62%).
 - **Consequences:** Phase 4 must build interaction features only from touches before the as-of date
   (ADR-005), and the leakage test must fail if later touches are used.
+
+### ADR-017 — Survival-aware SQL baseline scores until the ML model exists (Phase 3)
+- **Context:** Queries 07 (Revenue at Risk) and 13 (action queue) need `p_cancel` for open bookings, but
+  the model is Phase 4.
+- **Decision:** `sql/schema/03_baseline_scores.sql` writes `scored_bookings` at build time. For each segment
+  (visa status × deposit × lead-time band), it takes the historical rate at which closed-intake bookings
+  that were still alive at the same days-before-move-in as today went on to cancel (ADR-005). Thin
+  segments (< 50) fall back to the overall rate. `model_version = 'baseline_segment_rate_v1'`.
+- **Consequences:** All 14 queries are testable now. Phase 4 overwrites the table with the ML model and must
+  beat this baseline on the validation intake, which gives a fair benchmark.
+
+### ADR-018 — metrics.py in pandas, independent of the SQL; assumptions table for SQL
+- **Context:** Reconciling SQL against a metrics module that runs the same SQL proves nothing.
+- **Decision:** `metrics.py` computes every canonical metric in pandas from the shared views. SQL reads
+  business assumptions (SLA minutes, save rate) from a `meta_assumption` table populated from
+  `assumptions.yaml` at build time.
+- **Consequences:** Two independent implementations must agree (`tests/test_sql.py`), and there is still
+  one place to change an assumption.

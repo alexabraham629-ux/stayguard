@@ -128,6 +128,8 @@ TEAMS: dict[str, tuple[tuple[str, ...], int, tuple[str, ...]]] = {
     "Ireland": (("Dublin",), 3, ("en_IE",)),
 }
 OVERLOAD_CANDIDATE_TEAMS: tuple[str, ...] = ("London", "UK North")
+# Words that must never appear in generated names (branding rule: no real marketplace brand).
+RESERVED_NAME_WORDS: tuple[str, ...] = ("Amber",)
 AGENT_LANGUAGES: tuple[str, ...] = (
     "Hindi",
     "Mandarin",
