@@ -52,4 +52,74 @@ ai:
   query_timeout_seconds: 10
   session_rate_limit: 20         # max AI requests per browser session when a key is present
 
-# Planted ground-truth effect sizes (CLAUDE.md §4) are added in Phase 2.
+generator:
+  # Leads per (intake, city) = leads_per_intake_unit × intake_volume × city lead share, then
+  # thinned by the PG demand multipliers (effect 6) and censored at the snapshot date.
+  leads_per_intake_unit: 15800
+  intake_volume:
+    Sep-2024: 1.00
+    Jan-2025: 0.30
+    Sep-2025: 1.02
+    Jan-2026: 0.33
+    Sep-2026: 1.05
+    Jan-2027: 0.40               # January intakes are growing; these are the bookings we act on
+  repeat_student_share: 0.03     # leads from a student who already enquired for an earlier intake
+  deposit_weeks: 2               # deposit = weeks of rent; drives refund amounts. ASSUMPTION.
+
+  data_quality:                  # planted issues the quality report must catch (CLAUDE.md §4)
+    duplicate_booking_share: 0.005
+    null_first_response_share: 0.02
+    cancel_before_booking_rows: 12
+
+  # Planted ground-truth effects. The analysis (Phases 3–4) must RE-DISCOVER these.
+  # Documented in docs/DATA_GENERATION.md under "Ground truth".
+  ground_truth:
+    e1_visa:
+      # Cancellation intensity for reason visa_refused, by source country (before status multiplier).
+      refusal_intensity_by_source_country:
+        Nigeria: 0.30
+        Pakistan: 0.28
+        Nepal: 0.16
+        India: 0.12
+        Vietnam: 0.10
+        Other: 0.08
+        Saudi Arabia: 0.06
+        China: 0.04
+        USA: 0.03
+        UK: 0.00
+      status_multiplier:
+        not_applied: 1.6
+        pending: 1.0
+        granted: 0.08
+        not_required: 0.0
+    e2_no_deposit_multiplier: 1.9  # applied to non-visa cancellation reasons
+    e3_booking_lead_time:
+      # Multipliers by days_booked_before_intake bucket: <30, 30–89, 90–179, 180+
+      bucket_edges_days: [30, 90, 180]
+      found_cheaper: [0.4, 0.8, 1.2, 2.5]
+      duplicate_booking: [0.3, 0.7, 1.2, 3.0]
+      changed_plans: [0.6, 0.9, 1.1, 1.5]
+    e4_slow_response:              # applies when first_response_minutes > operations.late_first_response_minutes
+      shortlist_logit: -0.8
+      booking_logit: -0.4
+    e5_channel_logit:              # conversion effect on the log-odds scale, split across funnel steps
+      organic: 0.0
+      paid_search: -0.6
+      referral: 0.3
+      ambassador: 0.6
+      partner_consultancy: 0.5
+      loan_partner: 0.1
+    e6_pg_demand_multiplier:       # share of PG leads kept, by academic year and market segment
+      2024-25: {uk_non_london: 1.00, london: 1.00, au_ie: 1.00}
+      2025-26: {uk_non_london: 0.72, london: 0.88, au_ie: 1.00}
+      2026-27: {uk_non_london: 0.70, london: 0.86, au_ie: 1.00}
+    e7_overloaded_agents:
+      count: 2
+      assignment_weight: 3.0       # they receive 3× the leads of a teammate
+      capacity_range: [18, 23]     # junior agents: lower daily call capacity than the team (25–40)
+      response_time_multiplier: 2.5
+      cancellation_multiplier: 1.7 # on non-visa cancellation reasons
+      follow_up_rate_multiplier: 0.4
+    e8_lead_seasonality:           # share of an intake's leads created in each calendar month
+      Sep: {Nov: 0.02, Dec: 0.02, Jan: 0.05, Feb: 0.12, Mar: 0.14, Apr: 0.15, May: 0.15, Jun: 0.14, Jul: 0.13, Aug: 0.08}
+      Jan: {Jun: 0.04, Jul: 0.07, Aug: 0.10, Sep: 0.24, Oct: 0.26, Nov: 0.20, Dec: 0.09}

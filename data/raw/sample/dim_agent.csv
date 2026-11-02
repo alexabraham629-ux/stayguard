@@ -1,0 +1,30 @@
+agent_id,agent_name,team,languages,hire_date,max_daily_capacity
+1,Gail Kelly,London,English,2019-08-15,25
+2,Geoffrey Sullivan,London,"English, Nepali, Vietnamese",2020-05-02,31
+3,Kieran Jones,London,"English, Vietnamese, Yoruba",2019-05-19,27
+4,Adam Johnson,London,"English, Yoruba",2019-11-11,27
+5,Diya Madan,London,"English, Arabic, Yoruba",2022-12-16,36
+6,Sophie Morris,London,"English, Mandarin",2021-12-28,35
+7,Paul Gray,London,"English, Hindi, Nepali",2022-05-14,38
+8,Donald Turner,UK North,"English, Nepali, Vietnamese",2023-01-19,29
+9,Josephine Pearson,UK North,"English, Vietnamese, Yoruba",2023-01-04,34
+10,Jacqueline Grant,UK North,"English, Vietnamese",2022-08-27,22
+11,June Watson,UK North,English,2022-12-18,26
+12,Ashleigh Jones,UK North,"English, Arabic, Yoruba",2021-04-26,27
+13,Gillian Jordan,UK North,"English, Arabic, Yoruba",2021-11-10,20
+14,Dawn Whittaker,UK North,English,2021-10-10,30
+15,Mitesh Sathe,UK Midlands,"English, Urdu",2021-10-25,28
+16,Gaurav Mannan,UK Midlands,English,2021-07-20,33
+17,Rachana Buch,UK Midlands,"English, Arabic, Nepali",2021-11-08,32
+18,Ekta Dora,UK Midlands,"English, Vietnamese",2021-01-17,38
+19,Arya Kurian,UK Midlands,"English, Arabic, Mandarin",2022-06-14,30
+20,Christopher Roberts,ANZ,English,2019-12-10,26
+21,Miguel Snow,ANZ,"English, Arabic, Mandarin",2019-09-21,38
+22,James Cooper,ANZ,English,2019-08-21,30
+23,Amber Smith,ANZ,English,2022-11-29,34
+24,Lisa Butler,ANZ,"English, Cantonese, Mandarin",2020-08-13,26
+25,James Aguilar,ANZ,"English, Yoruba",2022-05-15,39
+26,Jeff Cox,ANZ,English,2019-08-21,38
+27,Ashley Guerin,Ireland,English,2019-04-01,39
+28,Aodhan Richie,Ireland,English,2022-01-03,35
+29,Joel Farell,Ireland,English,2022-07-08,38

@@ -15,6 +15,7 @@ Prerequisites: [uv](https://docs.astral.sh/uv/) and GNU make.
 
 ```bash
 make setup   # creates .venv with Python 3.12 and installs dependencies
+make data    # generates the synthetic data (~5 s) and builds data/stayguard.duckdb
 make test    # runs the test suite (no API key needed)
 make app     # launches the Streamlit app
 ```

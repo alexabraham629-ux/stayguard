@@ -1,0 +1,24 @@
+university_id,name,city_id,intl_share
+1,Northbridge University,1,0.381
+2,Thameside University,1,0.418
+3,Kingsgate College London,1,0.531
+4,Irwell University,2,0.285
+5,Pennine Institute of Technology,2,0.248
+6,Midland Crown University,3,0.353
+7,Rea Valley University,3,0.212
+8,Sherwood Vale University,4,0.21
+9,Trentbridge University,4,0.331
+10,Aire Valley University,5,0.241
+11,Kirkgate University,5,0.377
+12,Clydebank University,6,0.213
+13,Kelvinside Institute of Technology,6,0.362
+14,Three Spires University,7,0.397
+15,Don Valley University,8,0.356
+16,Peakgate University,8,0.207
+17,Harbourside University,9,0.549
+18,Coogee Bay University,9,0.354
+19,Yarra Bend University,10,0.528
+20,Southbank Institute of Technology,10,0.36
+21,Riverbend University,11,0.337
+22,Liffey University,12,0.472
+23,Phoenix Park Institute,12,0.389

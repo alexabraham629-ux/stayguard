@@ -1,0 +1,13 @@
+city_id,city,country,currency,market_tier,fx_to_gbp
+1,London,UK,GBP,1,1.0
+2,Manchester,UK,GBP,2,1.0
+3,Birmingham,UK,GBP,2,1.0
+4,Nottingham,UK,GBP,3,1.0
+5,Leeds,UK,GBP,2,1.0
+6,Glasgow,UK,GBP,2,1.0
+7,Coventry,UK,GBP,3,1.0
+8,Sheffield,UK,GBP,3,1.0
+9,Sydney,AU,AUD,1,0.51
+10,Melbourne,AU,AUD,1,0.51
+11,Brisbane,AU,AUD,2,0.51
+12,Dublin,IE,EUR,1,0.85

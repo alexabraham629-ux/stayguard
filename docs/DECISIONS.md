@@ -90,3 +90,30 @@ were agreed in Phase 0 (2026-11-03).
   `data/demo_cache.json`. Live AI runs locally (recorded for the README GIF). The per-session rate
   limit still exists for anyone running with a key.
 - **Consequences:** Zero API spend on the public demo; Demo-mode banner is always visible there.
+
+### ADR-014 — Schema additions beyond CLAUDE.md §4 (Phase 2)
+- **Context:** The funnel query needs the stage each lead reached; interactions belong to a lead *or* a
+  booking; queries need intake dates and the snapshot date without hard-coding them.
+- **Decision:** Add `dim_intake` (move-in date, academic year, open/closed), `meta_build` (snapshot date,
+  seed), `fact_lead.contacted_at` and `shortlisted_at`, and give `fact_interaction` two nullable keys
+  (`lead_id`, `booking_id`) with a CHECK that exactly one is set. Enumerated columns get CHECK constraints.
+  The student's visa requirement stays internal to the generator (visible as `not_required` visa status).
+- **Consequences:** Funnel stages come from timestamps, so `first_response_minutes` can be cross-checked
+  against `contacted_at`. The spec's columns are all present and unchanged.
+
+### ADR-015 — Generator design
+- **Context:** The planted effects must be discoverable, explainable, reproducible and fast.
+- **Decision:** Simulate full lifecycles, then censor at the snapshot (2026-10-31 00:00). Cancellation is a
+  competing-risk model with one intensity per reason. Planted effect sizes, volumes and data-quality rates
+  live in `assumptions.yaml`; background calibration constants live in `generate/reference.py`. Each stage
+  has an independent random stream (`SeedSequence.spawn`). The two overloaded agents are junior
+  (18–23 calls/day) so they top Agent Load, as effect 7 requires.
+- **Consequences:** Every effect maps to a reason code, which helps the action queue's reason codes later.
+  Generation takes about 5 s.
+
+### ADR-016 — Post-booking interactions as a deliberate leakage trap
+- **Context:** In real CRMs, students who are about to cancel stop replying. That signal is legitimate
+  "as of" a scoring date and leaky after it.
+- **Decision:** Students who will cancel get fewer positive interaction outcomes (38% vs 62%).
+- **Consequences:** Phase 4 must build interaction features only from touches before the as-of date
+  (ADR-005), and the leakage test must fail if later touches are used.
