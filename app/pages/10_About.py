@@ -4,6 +4,8 @@ import streamlit as st
 
 from stayguard.ui.layout import footer, page
 
+REPO_URL = "https://github.com/alexabraham629-ux/stayguard"
+
 page(
     "About StayGuard",
     "A booking-risk copilot for student-housing marketplaces. Portfolio project on synthetic data.",
@@ -93,7 +95,16 @@ st.markdown(
 st.subheader("Limitations")
 st.markdown(
     "Fixed FX rates; stylised rents and commission rates; no supply constraint; what-if levers "
-    "read causal effects off observational data. See `docs/DATA_GENERATION.md` and "
-    "`docs/FINDINGS.md` in the repository (link added at deployment)."
+    "read causal effects off observational data. See "
+    f"[DATA_GENERATION.md]({REPO_URL}/blob/main/docs/DATA_GENERATION.md) and "
+    f"[FINDINGS.md]({REPO_URL}/blob/main/docs/FINDINGS.md)."
+)
+
+st.subheader("Source code")
+st.markdown(
+    f"Everything (data generator, SQL library, model, AI layer, tests and docs) is on GitHub: "
+    f"**[{REPO_URL.removeprefix('https://')}]({REPO_URL})**. Start with the "
+    f"[README]({REPO_URL}#readme), the [decision log]({REPO_URL}/blob/main/docs/DECISIONS.md) "
+    f"and the [AI mistake log]({REPO_URL}/blob/main/docs/AI_LOG.md)."
 )
 footer()

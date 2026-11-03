@@ -15,7 +15,8 @@ database itself, in about 20 s behind a spinner (ADR-011), so no data files need
    generating the synthetic data…"*. Confirm in the logs which dependency file was used.
 4. **Smoke-test the live URL.** Every page loads, the footer says *Synthetic data — portfolio project*,
    and Ask the Data shows the demo-mode banner.
-5. **Link it.** Put the URL in the README (top of the file) and in `app/pages/10_About.py`.
+5. **Link it.** Put the app URL at the top of the README. The About page already links to the
+   GitHub repo.
 
 The deployed filesystem is temporary: the AI audit log resets on restart (ADR-010). That's acceptable,
 because the public demo makes no live AI calls.
@@ -35,5 +36,6 @@ because the public demo makes no live AI calls.
 | Pages load in under 3 s once warm | `test_pages_render_fast_when_warm` | ✅ |
 | Demo answers for Ask the Data | `make ai-eval` with a key, then commit `data/demo_cache.json` | ⏳ pending a key (ADR-027) |
 | Weekly AI memo on Home | `make ai-memo` with a key, then commit `data/memo_cache.json` | ⏳ pending a key; the rule-based insights show meanwhile |
-| GitHub push and Streamlit app | Steps 1–5 above | ⏳ yours to do (publishes the project) |
+| GitHub push | Step 1 | ✅ [alexabraham629-ux/stayguard](https://github.com/alexabraham629-ux/stayguard), commits authored with the GitHub noreply address |
+| Streamlit app | Steps 2–5 above | ⏳ yours to do (needs your Streamlit account) |
 | Licence | Add a `LICENSE` file (e.g. MIT) if you want others to reuse the code | ⏳ your choice |
