@@ -10,13 +10,19 @@ database itself, in about 20 s behind a spinner (ADR-011), so no data files need
 2. **Create the app** at [share.streamlit.io](https://share.streamlit.io): **New app**, then:
    - Repository: your repo; branch `main`; main file **`app/Home.py`**.
    - **Advanced settings:** Python **3.12**. Add **no secrets**, so the public demo stays in demo mode.
-3. **Watch the first boot.** The logs should show dependencies installing from `requirements.txt`
-   (which includes `-e .`, so the `stayguard` package is installed), then the spinner *"First start:
-   generating the synthetic data…"*. Confirm in the logs which dependency file was used.
+3. **Watch the first boot.** Streamlit picks `uv.lock` over `requirements.txt` (it warns that
+   several dependency files exist), so it installs the exact locked versions and the `stayguard`
+   package. Then the spinner *"First start: generating the synthetic data…"* shows while the logs
+   print each `[first boot]` step.
 4. **Smoke-test the live URL.** Every page loads, the footer says *Synthetic data — portfolio project*,
    and Ask the Data shows the demo-mode banner.
 5. **Link it.** Replace the HTML comment at the top of the README with the app URL (and the Loom
    walkthrough, once recorded). The About page already links to the GitHub repo.
+
+**If the app sits on a spinner after deploying:** open the app's **Manage app** logs. A healthy first
+boot prints `[first boot +Ns] …` lines and ends with `done`. On the first deploy (2026-11-04) no
+session started for about 25 minutes and some static files returned 500s. The cause was not found.
+**Reboot** (dashboard → ⋮ → Reboot) fixed it, and the app then booted in 11 s.
 
 The deployed filesystem is temporary: the AI audit log resets on restart (ADR-010). That's acceptable,
 because the public demo makes no live AI calls.
@@ -37,5 +43,5 @@ because the public demo makes no live AI calls.
 | Demo answers for Ask the Data | `make ai-eval` with a key, then commit `data/demo_cache.json` | ⏳ pending a key (ADR-027) |
 | Weekly AI memo on Home | `make ai-memo` with a key, then commit `data/memo_cache.json` | ⏳ pending a key; the rule-based insights show meanwhile |
 | GitHub push | Step 1 | ✅ [alexabraham629-ux/stayguard](https://github.com/alexabraham629-ux/stayguard), commits authored with the GitHub noreply address |
-| Streamlit app | Steps 2–5 above | ⏳ yours to do (needs your Streamlit account) |
+| Streamlit app | Steps 2–5 above | ✅ [stayguard-booking-risk.streamlit.app](https://stayguard-booking-risk.streamlit.app), deployed 2026-11-04 (Python 3.12, no secrets). Dependencies came from `uv.lock` via uv-sync. First boot took 11 s. All 10 pages load with the synthetic-data footer; Home shows £821k / £562k / £141k / 28.8% / 30.6%, matching the local build |
 | Licence | `LICENSE` at the repo root | ✅ MIT, added 2026-11-04 |

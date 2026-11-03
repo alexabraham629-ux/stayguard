@@ -1,6 +1,8 @@
 # StayGuard: Booking Risk Copilot
 
-<!-- Live demo (Streamlit Community Cloud) and Loom walkthrough links go here once published. -->
+**Live demo:** [stayguard-booking-risk.streamlit.app](https://stayguard-booking-risk.streamlit.app) (synthetic data; the first visit after a quiet spell can take a minute to wake up)
+<!-- Loom walkthrough link goes here once recorded. -->
+
 **Built by Alex Abraham — MBA Business Analytics** · Code: [github.com/alexabraham629-ux/stayguard](https://github.com/alexabraham629-ux/stayguard) · [MIT licence](LICENSE)
 
 StayGuard forecasts how much of a student-housing marketplace's booked commission will actually land.

@@ -70,7 +70,7 @@ st.iframe(
       SQL --> APP["Streamlit app"]
       M --> APP
       M -. reconciles .- SQL
-      APP --> AI["AI layer (next phase)<br/>NL to SQL + verifier"]
+      APP --> AI["AI layer<br/>NL to SQL + verifier"]
       AI -. checks against .-> M
     </div>
     <script type="module">

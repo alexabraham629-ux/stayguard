@@ -148,3 +148,12 @@ Format:
 - Lesson / guardrail added: when a new status value is added, re-check every place that filters on
   that column. Exclusion lists ("everything except blocked/error") silently absorb new values;
   inclusion lists don't.
+
+### 2026-11-04 — Architecture diagram still said "AI layer (next phase)"
+- What the AI produced: the About page's Mermaid diagram was written in Phase 5, before the AI layer
+  existed, and labelled it "AI layer (next phase)". Phases 6–8 built the AI layer and updated the
+  README's diagram, but not this one, so the deployed app described a finished feature as unbuilt.
+- How it was caught (manual review): reading the About page source while checking the live deploy.
+- Fix: the label now reads "AI layer: NL to SQL + verifier".
+- Lesson / guardrail added: when a phase completes something earlier text promised, search the repo
+  for "next phase", "pending" and "not yet" and update every copy, not only the README.
