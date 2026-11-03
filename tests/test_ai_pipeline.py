@@ -3,9 +3,10 @@
 No test here calls the real API: `make test` passes with no key (CLAUDE.md §10).
 """
 
+import pandas as pd
 import pytest
 
-from stayguard.ai.audit import AuditLog, AuditRecord
+from stayguard.ai.audit import AuditLog, AuditRecord, verified_share
 from stayguard.ai.client import AIError, ScriptedClient
 from stayguard.ai.demo import entry_from, load_demo_cache, save_demo_cache
 from stayguard.ai.eval import load_questions, run_eval
@@ -253,6 +254,13 @@ def test_audit_log_round_trip(tmp_path):
     )
     df = log.read()
     assert len(df) == 1 and df["verification_status"].item() == "verified"
+
+
+def test_verified_share_ignores_requests_the_verifier_never_saw():
+    log = pd.DataFrame({"verification_status": ["ran", "blocked", "error", ""]})
+    assert verified_share(log) is None  # MCP queries and blocks are not failed verifications
+    log = pd.DataFrame({"verification_status": ["verified", "mismatch", "ran", "blocked"]})
+    assert verified_share(log) == 0.5
 
 
 def test_demo_cache_round_trip(con, data, tmp_path):

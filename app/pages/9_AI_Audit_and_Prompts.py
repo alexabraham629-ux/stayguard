@@ -3,7 +3,7 @@
 import plotly.graph_objects as go
 import streamlit as st
 
-from stayguard.ai.audit import AuditLog
+from stayguard.ai.audit import AuditLog, verified_share
 from stayguard.ai.eval import RESULTS_DIR
 from stayguard.ai.prompts import list_prompts
 from stayguard.config import PROJECT_ROOT
@@ -25,17 +25,15 @@ with audit_tab:
             "questions."
         )
     else:
-        answered = log.loc[~log["verification_status"].isin(["blocked", "error", ""])]
-        verified_share = (
-            (answered["verification_status"] == "verified").mean() if len(answered) else 0
-        )
+        share = verified_share(log)
         c1, c2, c3, c4 = st.columns(4)
         c1.metric("AI requests", f"{len(log):,}", border=True)
         c2.metric(
             "Answers auto-verified",
-            f"{verified_share:.0%}",
+            "—" if share is None else f"{share:.0%}",
             border=True,
-            help="Verified / answered requests (blocked and failed requests excluded).",
+            help="Verified / answers checked by the verifier. Blocked, failed and MCP queries "
+            "are excluded.",
         )
         c3.metric(
             "Mismatches caught", int((log["verification_status"] == "mismatch").sum()), border=True
@@ -47,7 +45,10 @@ with audit_tab:
         )
 
         counts = log["verification_status"].replace("", "error").value_counts()
-        st.subheader(f"{verified_share:.0%} of answered questions passed independent verification")
+        if share is None:
+            st.subheader("No verified answers logged yet: these are MCP queries and blocks")
+        else:
+            st.subheader(f"{share:.0%} of answered questions passed independent verification")
         colors = {"verified": ACCENT, "mismatch": CRITICAL}
         fig = go.Figure(
             go.Bar(

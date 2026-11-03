@@ -1,7 +1,11 @@
 # StayGuard: Booking Risk Copilot
 
-**How much of the commission we've booked will actually land, and who should we call today to save
-the rest?**
+<!-- Live demo (Streamlit Community Cloud) and Loom walkthrough links go here once published. -->
+**Built by Alex Abraham — MBA Business Analytics** · Code: [github.com/alexabraham629-ux/stayguard](https://github.com/alexabraham629-ux/stayguard) · [MIT licence](LICENSE)
+
+StayGuard forecasts how much of a student-housing marketplace's booked commission will actually land.
+It ranks which students booking managers should call today, and shows which cities, channels and intakes leak revenue.
+Anyone can ask the data in plain English, and every AI answer is checked independently before it is shown.
 
 > **Synthetic data, portfolio project.** Inspired by the business model of student-housing
 > marketplaces such as Amber. No real company data, names or brand assets are used, and the app is
@@ -22,24 +26,17 @@ StayGuard answers three questions:
 2. **Operations:** which students should we call today, within each agent's capacity?
 3. **Strategy:** which cities, countries, channels and intakes are leaking revenue?
 
-It also lets anyone ask the data in plain English, and **every AI answer is independently verified
-before it is shown**.
+## Key findings
 
-## Key findings (seed-20261031 build; details in [docs/FINDINGS.md](docs/FINDINGS.md))
+The full list, with method and recommendations, is in [docs/FINDINGS.md](docs/FINDINGS.md) (seed-20261031 build).
 
-- **£562k of the £703k still open for Jan-2027 is expected to land.** £141k (20.1%) is at risk, close to
-  the 19.4% Jan-2026 actually lost from the same point. **London holds 30% of the risk.**
-- **Five of seven cancellation reasons explain 88.7% of cancellations.** Students who had not yet applied
-  for a visa cancel most: Pakistan 55%, Nigeria 52%.
+- **£562k of the £703k still open for Jan-2027 is expected to land.** £141k (20.1%) is at risk, and
+  London holds 30% of it.
 - **The risk model ranks well.** Calling the riskiest 20% saves **2.3x** the commission of random
-  calling, and calibration is within 3.3 points everywhere.
+  calling.
 - **Early bookers are risky early, not late.** Among bookings still alive 72 days before move-in,
   early bookers are the *lower*-risk group, so a "booked 7 months early" rule would send agents to the
   wrong students.
-- **UK postgraduate demand outside London fell 27% in 2025-26.** London fell 2%; Australia and Ireland
-  grew 2%.
-- **An ambassador lead is worth £264 in landed commission; a paid-search lead £167.**
-- **Leads answered late convert at 18.8%, against 35.6%** for leads answered within 240 minutes.
 - **Three levers project +£28k (+5.0%) for Jan-2027:** a risk-ranked call queue, chasing deposits, and a
   response-time target. This is a labelled projection, not a forecast.
 
@@ -87,22 +84,20 @@ panel. It names the SQL file, says which filters applied, and shows the data tab
   guardrails (see below).
 - **Audit:** every AI call is logged with its prompt version, SQL, verdict, latency and tokens.
 
-**Status:** all of this is tested offline with a scripted model (208 tests, no API key needed). The
+**Status:** all of this is tested offline with a scripted model (209 tests, no API key needed). The
 live 15-question eval (`make ai-eval`, about $1) hasn't been run yet because no API key is available
 (ADR-027). Until then Ask the Data shows "demo answers not generated", rather than fabricated answers.
+
+| Ask the data today (demo mode, no answers recorded yet) | AI audit log (MCP queries and guardrail blocks) |
+|---|---|
+| ![](dashboards/screenshots/08_ask_the_data_demo_mode.png) | ![](dashboards/screenshots/09_ai_audit.png) |
 
 ### How AI was used to build it
 
 StayGuard was built with **Claude Code** from a single spec, [`CLAUDE.md`](CLAUDE.md), one phase at a
 time. Every phase ended with tests, lint, a commit and my review.
-- **[docs/AI_LOG.md](docs/AI_LOG.md) records 12 genuine mistakes the AI made and how each was caught**,
-  for example:
-  - adding currencies together
-  - a NULL-dropping average
-  - a generator bug that skewed the model's scores
-  - a branding slip
-  - stale SDK names
-  - a misleading chart axis
+- **[docs/AI_LOG.md](docs/AI_LOG.md) records every genuine mistake the AI made and how each was
+  caught**, from adding currencies together to a generator bug that skewed the model's scores.
 - **[docs/DECISIONS.md](docs/DECISIONS.md)** has 28 decision records.
 - **[docs/PROMPTS.md](docs/PROMPTS.md)** is the reusable prompt library.
 
@@ -142,7 +137,7 @@ make app     # open http://localhost:8501
 
 | Target | What it does |
 |---|---|
-| `make test` | 208 tests: data, SQL reconciliation, model, app pages, AI layer, MCP, release. No key needed |
+| `make test` | 209 tests: data, SQL reconciliation, model, app pages, AI layer, MCP, release. No key needed |
 | `make lint` | ruff check + format check |
 | `make quality` | Data-quality report (15 integrity rules + 4 planted issues) |
 | `make export` | Star schema as CSV + Parquet in `data/exports/` for Power BI / Tableau |
@@ -203,7 +198,7 @@ config/           assumptions.yaml: every business assumption in one place
 sql/              17 numbered business queries + schema/ + model/
 src/stayguard/    generate/ · metrics.py · kpis.py · model/ · ai/ · sim/ · ui/ · export.py · mcp_tools.py
 mcp_server/       MCP server
-tests/            208 tests + ai_eval/questions.yaml
+tests/            209 tests + ai_eval/questions.yaml
 notebooks/        01_eda.ipynb (executed) + build_eda.py
 dashboards/       powerbi_spec.md + screenshots/
 docs/             PRD, METRICS, DATA_GENERATION, DECISIONS, PROMPTS, AI_LOG, FINDINGS, DEPLOY

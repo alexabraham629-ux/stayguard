@@ -134,3 +134,17 @@ Format:
 - Fix: `.3~s` (three significant figures, trailing zeros trimmed) on every money axis.
 - Lesson / guardrail added: charts are reviewed as rendered images, not just as passing tests; a chart
   that renders without error can still mislead.
+
+### 2026-11-04 — AI Audit counted MCP queries as failed verifications ("0% verified")
+- What the AI produced: the AI Audit page computed "Answers auto-verified" over every request that was
+  not `blocked` or `error`. When Phase 7 added MCP logging with a new status, `ran`, the denominator was
+  not updated. MCP queries never go through the verifier, so the page reported "0% of answered
+  questions passed independent verification" when the verifier had in fact checked nothing.
+- How it was caught (manual review): reading the page while taking the README screenshot. The audit log
+  held 8 MCP guardrail blocks and 1 MCP query, and no Ask the Data answers at all.
+- Fix: `verified_share()` in `stayguard.ai.audit` counts only verifier statuses (`verified`,
+  `mismatch`, `unverifiable`) and returns None when there are none; the page then shows "—" and says
+  what the log holds. A unit test covers both cases.
+- Lesson / guardrail added: when a new status value is added, re-check every place that filters on
+  that column. Exclusion lists ("everything except blocked/error") silently absorb new values;
+  inclusion lists don't.

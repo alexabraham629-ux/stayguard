@@ -22,12 +22,12 @@ DDL = """
 CREATE TABLE IF NOT EXISTS ai_audit (
     ts                   TIMESTAMP NOT NULL,
     session_id           VARCHAR,
-    feature              VARCHAR NOT NULL,   -- nl2sql | verifier | memo | eval
+    feature              VARCHAR NOT NULL,   -- nl2sql | verifier | memo | eval | mcp
     prompt_version       VARCHAR,
     model                VARCHAR,
     question             VARCHAR,
     generated_sql        VARCHAR,
-    verification_status  VARCHAR,            -- verified | mismatch | unverifiable | blocked | error
+    verification_status  VARCHAR,     -- verified | mismatch | unverifiable | blocked | error | ran
     checks               VARCHAR,            -- JSON list of {name, status, detail}
     latency_ms           INTEGER,
     input_tokens         INTEGER,
@@ -77,6 +77,19 @@ class AuditLog:
             return pd.DataFrame(columns=[f.split()[0] for f in _columns()])
         with _LOCK, duckdb.connect(str(self.path), read_only=True) as con:
             return con.execute("SELECT * FROM ai_audit ORDER BY ts DESC").df()
+
+
+VERIFIER_STATUSES = ("verified", "mismatch", "unverifiable")
+
+
+def verified_share(log: pd.DataFrame) -> float | None:
+    """Share of verifier-checked answers that verified; None if the verifier has seen none.
+
+    Only Ask the Data answers pass through the verifier. Blocked and failed requests, and MCP
+    queries (status "ran"), are excluded rather than counted as failures.
+    """
+    checked = log.loc[log["verification_status"].isin(VERIFIER_STATUSES)]
+    return float((checked["verification_status"] == "verified").mean()) if len(checked) else None
 
 
 def _columns() -> list[str]:
