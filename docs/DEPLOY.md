@@ -29,7 +29,7 @@ because the public demo makes no live AI calls.
 | `requirements.txt` in sync with `pyproject.toml` | `make reqs`; `test_requirements_txt_covers_every_runtime_dependency` | ✅ |
 | No secrets tracked | `git ls-files` contains no `.env`; no `sk-ant` string in tracked files | ✅ |
 | Database not committed; first boot builds it | `test_first_boot_builds_a_complete_database` | ✅ |
-| Fresh clone → `make setup data app` works | Clone into an empty folder, run all three, check the app answers | ✅ Verified 2026-11-03 on commit `ff51c0a` (Windows 11): `make setup` 14 s, `make data` 38 s with identical results; the app served the same KPIs (£821k / £562k / £141k / 28.8% / 30.6%); 208 tests and lint pass in the clone. First page load of a brand-new environment: 10.6 s (one-off compile and import) |
+| Fresh clone → `make setup data app` works | Clone into an empty folder, run all three, check the app answers | ✅ Verified 2026-11-03 on commit `7cc531e` (Windows 11): `make setup` 14 s, `make data` 38 s with identical results; the app served the same KPIs (£821k / £562k / £141k / 28.8% / 30.6%); 208 tests and lint pass in the clone. First page load of a brand-new environment: 10.6 s (one-off compile and import) |
 | Every page labelled synthetic | `test_page_renders_without_exceptions` checks the footer on all 10 pages | ✅ |
 | No marketplace brand in the app or data | `test_no_brand_name_in_any_generated_text`; the README only says "inspired by" | ✅ |
 | Pages load in under 3 s once warm | `test_pages_render_fast_when_warm` | ✅ |
