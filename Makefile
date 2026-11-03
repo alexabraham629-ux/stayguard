@@ -32,8 +32,8 @@ ai-eval:  ## run the 15-question AI eval live (needs ANTHROPIC_API_KEY; ~$1); wr
 ai-memo:  ## generate the weekly AI memo with its number check (needs ANTHROPIC_API_KEY)
 	uv run python -m stayguard.ai.memo
 
-export:  ## write star-schema CSV/Parquet for Power BI / Tableau
-	@echo make export: star-schema export arrives in Phase 8
+export:  ## write the star schema as CSV + Parquet to data/exports/ for Power BI / Tableau
+	uv run python -m stayguard.export
 
 lint:  ## lint and check formatting
 	uv run ruff check .

@@ -74,7 +74,7 @@ fig.add_bar(
     ),
     hovertemplate="%{x}<br>%{y:£,.0f}<extra>lost / at risk</extra>",
 )
-fig.update_layout(barmode="stack", yaxis_tickprefix="£", yaxis_tickformat=",.0s")
+fig.update_layout(barmode="stack", yaxis_tickprefix="£", yaxis_tickformat=".3~s")
 chart(fig, 360)
 st.caption(
     f"Hatched bar: {now} is still open, so it shows expected net commission and revenue at risk "

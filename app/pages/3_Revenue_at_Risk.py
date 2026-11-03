@@ -79,7 +79,7 @@ with risk_tab:
                     hovertemplate="%{y}: %{x:£,.0f}<extra></extra>",
                 )
             )
-            fig.update_layout(xaxis_tickprefix="£", xaxis_tickformat=",.0s")
+            fig.update_layout(xaxis_tickprefix="£", xaxis_tickformat=".3~s")
             chart(fig, 380)
             how_calculated(["07_revenue_at_risk_by_city"], cities, applied, skipped)
         with right:
@@ -111,7 +111,7 @@ with risk_tab:
                     hovertemplate="visa %{y}: %{x:£,.0f}<extra></extra>",
                 )
             )
-            fig.update_layout(xaxis_tickprefix="£", xaxis_tickformat=",.0s")
+            fig.update_layout(xaxis_tickprefix="£", xaxis_tickformat=".3~s")
             chart(fig, 220)
             by_country = (
                 queue.groupby("source_country")["expected_loss_gbp"].sum().sort_values().tail(6)
@@ -129,7 +129,7 @@ with risk_tab:
                     hovertemplate="%{y}: %{x:£,.0f}<extra></extra>",
                 )
             )
-            fig.update_layout(xaxis_tickprefix="£", xaxis_tickformat=",.0s")
+            fig.update_layout(xaxis_tickprefix="£", xaxis_tickformat=".3~s")
             chart(fig, 230)
             how_calculated(
                 ["13_action_queue"],

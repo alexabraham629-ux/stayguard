@@ -97,7 +97,7 @@ with result:
     fig.update_layout(
         yaxis_range=[low, r.projected_enc_gbp * 1.04 if r.projected_enc_gbp else 1],
         yaxis_tickprefix="£",
-        yaxis_tickformat=",.0s",
+        yaxis_tickformat=".3~s",
     )
     chart(fig, 380)
     st.caption(

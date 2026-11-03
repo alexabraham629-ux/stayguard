@@ -13,10 +13,15 @@ from stayguard.sql_runner import load_sql, parse_header
 
 @st.cache_resource(show_spinner=False)
 def connection() -> duckdb.DuckDBPyConnection:
-    """One read-only connection per server process; queries use per-call cursors (thread-safe)."""
+    """One read-only connection per server process; queries use per-call cursors (thread-safe).
+
+    On first boot (e.g. a fresh deployment) the database does not exist yet: build it once.
+    """
     if not DB_PATH.exists():
-        st.error("The database has not been built yet. Run `make data`, then reload this page.")
-        st.stop()
+        from stayguard.bootstrap import ensure_database
+
+        with st.spinner("First start: generating the synthetic data and scoring bookings (~20 s)…"):
+            ensure_database(DB_PATH)
     return duckdb.connect(str(DB_PATH), read_only=True)
 
 

@@ -124,3 +124,13 @@ Format:
 - Lesson / guardrail added: check third-party APIs against the installed version (signatures, rename
   notices) before relying on remembered names. An end-to-end test against the real SDK is what caught
   the rest.
+
+### 2026-11-03 — Money axes rounded to one significant figure
+- What the AI produced: chart axes used Plotly's `,.0s` tick format, which rounds to one significant
+  figure. On the What-If waterfall (values £520k–£600k), three different gridlines were all labelled
+  "£600k" and two "£500k", which misstates the scale.
+- How it was caught (manual review): reading the screenshots taken for the README. The same format
+  looked fine on Home, where the values are round millions.
+- Fix: `.3~s` (three significant figures, trailing zeros trimmed) on every money axis.
+- Lesson / guardrail added: charts are reviewed as rendered images, not just as passing tests; a chart
+  that renders without error can still mislead.
