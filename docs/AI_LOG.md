@@ -111,3 +111,16 @@ Format:
 - Fix: whole numbers must match exactly; the 0.5% tolerance applies to rates and money only (ADR-026).
 - Lesson / guardrail added: the eval harness is tested with deliberately wrong answers, so a lenient
   grader or verifier fails a test instead of inflating the score.
+
+### 2026-11-03 — Stale SDK knowledge: MCP 1.x names used against the 2.x SDK
+- What the AI produced: CLAUDE.md (and the model's own prior) named FastMCP and the 1.x field names
+  `readOnlyHint` and `isError`. The installed MCP SDK is 2.3, where FastMCP is `MCPServer` and fields
+  are snake_case. The server's annotations happened to load through aliases, but the test read
+  `tool.annotations.readOnlyHint` and `result.isError`.
+- How it was caught (inspection + test): the server import was checked against the installed package
+  before writing code, which surfaced the rename. The stdio end-to-end test then failed with
+  `AttributeError: ... Did you mean 'read_only_hint'?`.
+- Fix: `MCPServer`, `read_only_hint` / `destructive_hint`, `is_error` (ADR-028).
+- Lesson / guardrail added: check third-party APIs against the installed version (signatures, rename
+  notices) before relying on remembered names. An end-to-end test against the real SDK is what caught
+  the rest.

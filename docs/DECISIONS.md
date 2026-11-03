@@ -239,3 +239,17 @@ logged only for students who arrive, now makes the trap real (leaky PR-AUC 0.715
   - The live-eval acceptance criterion is open.
   - To close it: put a key in `.env`, then run `make ai-eval` and `make ai-memo` (estimated under $1), and
     commit `data/demo_cache.json`, `data/memo_cache.json` and `tests/ai_eval/results/`.
+
+### ADR-028 — MCP server on the 2.x SDK (`MCPServer`), sharing the AI guardrails
+- **Context:** CLAUDE.md specifies FastMCP. In the installed MCP Python SDK (2.3), FastMCP has been
+  renamed `MCPServer`, and some names changed (snake_case fields such as `read_only_hint`, `is_error`).
+- **Decision:**
+  - Use `mcp.server.mcpserver.MCPServer`, the same decorator-based design under its 2.x name.
+  - Keep the tool logic in `stayguard.mcp_tools`, free of MCP so it is unit-testable;
+    `mcp_server/server.py` only registers four tools, all annotated read-only.
+  - SQL goes through `ai/guardrails.py`, the same rules as Ask the Data. The verifier's currency and
+    duplicate checks come back as warnings.
+  - Queries are logged to the audit DB.
+  - `STAYGUARD_DB_PATH` lets tests point the server at a temporary database.
+- **Consequences:** One set of guardrails for every way an AI touches the data. A pytest test starts the
+  real server over stdio and calls it like Claude Code does.
