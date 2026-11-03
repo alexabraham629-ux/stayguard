@@ -42,7 +42,7 @@ select = ["E", "W", "F", "I", "UP", "B", "SIM", "ANN"]
 ignore = ["ANN401"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["ANN"]
+"tests/**" = ["ANN", "E501"]  # long inline SQL in tests reads better unwrapped
 "notebooks/**" = ["ANN", "E402"]
 
 [tool.pytest.ini_options]

@@ -3,6 +3,7 @@
 import plotly.graph_objects as go
 import streamlit as st
 
+from stayguard.ai.memo import load_memo
 from stayguard.calendar import (
     comparable_intake,
     days_to_open_intake,
@@ -11,6 +12,7 @@ from stayguard.calendar import (
 )
 from stayguard.kpis import commission_by_intake, executive_kpis, headline_insights
 from stayguard.ui import data
+from stayguard.ui.ai_render import render_memo
 from stayguard.ui.layout import chart, footer, gbp, how_calculated, insight, kpi_card, page
 from stayguard.ui.theme import ACCENT, CRITICAL, NEUTRAL, SURFACE
 
@@ -89,11 +91,16 @@ how_calculated(
 )
 
 # --- Insights ----------------------------------------------------------------------------------
-st.subheader("Three things to know this week")
-for item in headline_insights(data.query):
-    insight(item.headline, item.detail + f" · <code>sql/{item.sql_file}.sql</code>")
-st.caption(
-    "Rule-based insights from the SQL library, all markets. The AI-written, number-checked memo "
-    "replaces them once the AI layer is enabled."
-)
+st.subheader("This week's memo")
+memo = load_memo()
+if memo is not None:
+    render_memo(memo)
+    st.caption("All markets. Regenerate with `make ai-memo`.")
+else:
+    for item in headline_insights(data.query):
+        insight(item.headline, item.detail + f" · <code>sql/{item.sql_file}.sql</code>")
+    st.caption(
+        "Rule-based insights from the SQL library, all markets. Run `make ai-memo` (needs an API "
+        "key) to replace them with an AI-written memo whose every number is checked."
+    )
 footer()

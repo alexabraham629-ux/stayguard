@@ -2,10 +2,10 @@
 # cmd.exe (GNU make on Windows) and sh (macOS/Linux). See ADR-003.
 
 .DEFAULT_GOAL := help
-.PHONY: help setup data model quality test app export lint format reqs
+.PHONY: help setup data model quality test app ai-eval ai-memo export lint format reqs
 
 help:
-	@echo Targets: setup data model quality test app export lint format reqs
+	@echo Targets: setup data model quality test app ai-eval ai-memo export lint format reqs
 
 setup:  ## create .venv with Python 3.12 and install all dependencies from uv.lock
 	uv sync
@@ -25,6 +25,12 @@ test:  ## run the test suite (no API key needed)
 
 app:  ## launch the Streamlit app
 	uv run streamlit run app/Home.py
+
+ai-eval:  ## run the 15-question AI eval live (needs ANTHROPIC_API_KEY; ~$1); writes the demo cache
+	uv run python -m stayguard.ai.eval
+
+ai-memo:  ## generate the weekly AI memo with its number check (needs ANTHROPIC_API_KEY)
+	uv run python -m stayguard.ai.memo
 
 export:  ## write star-schema CSV/Parquet for Power BI / Tableau
 	@echo make export: star-schema export arrives in Phase 8

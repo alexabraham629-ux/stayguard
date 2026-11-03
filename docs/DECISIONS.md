@@ -191,3 +191,34 @@ logged only for students who arrive, now makes the trap real (leaky PR-AUC 0.715
      commission × survival.
 - **Consequences:** Levers 1 and 3 read causal effects off observational data, and the page says so next to
   the result. A test pins the calls lever to `metrics.saveable_revenue_gbp`.
+
+### ADR-024 — AI client: structured JSON, cached system prompt, refusal fallbacks
+- **Context:** The AI layer must return parseable answers, be cheap to run repeatedly, and be testable
+  without a key.
+- **Decision:**
+  - One `LLMClient` interface: `AnthropicClient` in the app, `ScriptedClient` in tests.
+  - Every call uses structured outputs (`output_config.format` with a JSON schema) on
+    `claude-sonnet-5-5` (CLAUDE.md §2; overridable with `ANTHROPIC_MODEL`) at effort `medium`.
+  - The large, stable system prompt (schema context and examples) is cached with `cache_control`.
+  - Server-side refusal fallbacks (`fallbacks: "default"`) are enabled.
+  - API errors map to friendly messages.
+- **Consequences:** No JSON parsing failures by construction. `make test` needs no key. Repeated calls reuse
+  the cached prompt prefix.
+
+### ADR-025 — Guardrail blocks are final; self-repair only for execution errors
+- **Context:** CLAUDE.md asks for one automatic self-repair retry on SQL errors.
+- **Decision:** A query that fails when it runs (wrong column, type error) gets one retry with the error
+  passed back. A query rejected by the guardrails (DML, file access, other tables) does not: the model is
+  never given a second attempt to get round a safety rule. `fact_booking` stays queryable so the verifier
+  can demonstrate the duplicate-rows warning.
+- **Consequences:** Injection-style questions fail closed. A blocked question costs one model call.
+
+### ADR-026 — Verification semantics
+- **Context:** The badge must mean something to a stakeholder.
+- **Decision:**
+  - **Badge rule:** any failed check gives ⚠️ Mismatch. Otherwise, the canonical-metric check or the
+    independent re-derivation passing gives ✅ Verified. Otherwise ◻️ Unverifiable.
+  - **Tolerance:** 0.5% relative for money and rates; whole numbers (counts) must match exactly.
+  - **Independence:** the independent query comes from a different prompt and never sees the first SQL.
+    The canonical metric is computed by `metrics.py` in pandas.
+- **Consequences:** The eval's headline is "wrong but verified" (must be empty), not just accuracy.

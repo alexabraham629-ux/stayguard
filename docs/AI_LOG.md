@@ -93,3 +93,21 @@ Format:
 - Fix: the title now states the numbers ("lower-budget students cancel slightly more (29.9% vs 27.6%)").
 - Lesson / guardrail added: insight titles are computed from the data and quote the numbers they rely
   on, rather than characterising them.
+
+### 2026-11-03 — Verifier's row-count check matched "country" as a count column
+- What the AI produced: the sanity check looked for count columns with the pattern `count`, which also
+  matches `country`, so it compared country names with a row count and crashed on any breakdown by country.
+- How it was caught (test): `test_grouped_canonical_metric` failed with a TypeError.
+- Fix: whole-word patterns (`^count`, `_count$`, `bookings`, `leads`, ...) applied to numeric columns only.
+- Lesson / guardrail added: column-name heuristics are tested on real breakdown queries, not just
+  single-number answers.
+
+### 2026-11-03 — 0.5% tolerance let a duplicate-inflated count pass as correct
+- What the AI produced: the verifier and the eval grader compared every number within 0.5%. A booking
+  count taken from raw `fact_booking` (duplicates included) is off by about 0.5%, so the "careless model"
+  answer to Q08 was graded correct and not flagged.
+- How it was caught (test): `test_eval_with_a_careless_model_is_caught_by_the_verifier`, an offline run of
+  the eval with a fake model that falls into each trap on purpose.
+- Fix: whole numbers must match exactly; the 0.5% tolerance applies to rates and money only (ADR-026).
+- Lesson / guardrail added: the eval harness is tested with deliberately wrong answers, so a lenient
+  grader or verifier fails a test instead of inflating the score.

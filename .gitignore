@@ -18,6 +18,9 @@ data/raw/*
 !data/raw/sample/
 data/*.duckdb
 data/*.duckdb.wal
+# AI caches ARE committed: the public demo runs without a key (ADR-013)
+!data/demo_cache.json
+!data/memo_cache.json
 data/exports/*
 !data/exports/.gitkeep
 
