@@ -222,3 +222,20 @@ logged only for students who arrive, now makes the trap real (leaky PR-AUC 0.715
   - **Independence:** the independent query comes from a different prompt and never sees the first SQL.
     The canonical metric is computed by `metrics.py` in pandas.
 - **Consequences:** The eval's headline is "wrong but verified" (must be empty), not just accuracy.
+
+### ADR-027 — Live AI eval deferred (no API key for now)
+- **Context:** Phase 6's acceptance includes running the 15-question eval against the live model. No
+  Anthropic API key is available at the moment (decision taken 2026-11-03).
+- **Decision:** Ship the AI layer verified offline only:
+  - guardrail tests
+  - the eval harness run with a scripted "perfect" model (all pass) and a "careless" model (every trap
+    flagged, none verified)
+  - the verifier and memo-checker tests
+
+  No demo answers or memo are fabricated: the demo cache and memo cache stay empty until a real run.
+- **Consequences:**
+  - The app runs fully without a key. Ask the Data says demo answers have not been generated yet, and Home
+    shows the rule-based insights.
+  - The live-eval acceptance criterion is open.
+  - To close it: put a key in `.env`, then run `make ai-eval` and `make ai-memo` (estimated under $1), and
+    commit `data/demo_cache.json`, `data/memo_cache.json` and `tests/ai_eval/results/`.

@@ -43,6 +43,9 @@ it) at effort `medium`. The stable system prompt is cached, and server-side refu
 
 ## Results from live runs
 
+**Status (2026-11-03): not run yet.** No API key is configured (ADR-027). The offline harness tests
+(`tests/test_ai_pipeline.py`) pass. They are not a substitute for a live run.
+
 The 15-question eval (`tests/ai_eval/questions.yaml`, `make ai-eval`) writes
 `tests/ai_eval/results/latest.md`, and the AI Audit page shows it. Failures observed in live runs are
 recorded in `docs/AI_LOG.md`.
