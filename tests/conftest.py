@@ -1,12 +1,14 @@
-"""Shared fixtures: one full-scale dataset and database per test session (built in a temp dir)."""
+"""Shared fixtures: one full-scale dataset, database and model run per test session (temp dir)."""
 
 from collections.abc import Iterator
+from pathlib import Path
 
 import duckdb
 import pytest
 
 from stayguard.db import build_database, connect
 from stayguard.generate.pipeline import GeneratedData, generate
+from stayguard.model.pipeline import ModelRun, run_model_pipeline
 
 
 @pytest.fixture(scope="session")
@@ -15,11 +17,20 @@ def generated() -> GeneratedData:
 
 
 @pytest.fixture(scope="session")
-def con(
-    generated: GeneratedData, tmp_path_factory: pytest.TempPathFactory
-) -> Iterator[duckdb.DuckDBPyConnection]:
-    db_path = tmp_path_factory.mktemp("db") / "stayguard.duckdb"
-    build_database(generated.tables, db_path, generated.manifest)
+def db_path(generated: GeneratedData, tmp_path_factory: pytest.TempPathFactory) -> Path:
+    path = tmp_path_factory.mktemp("db") / "stayguard.duckdb"
+    build_database(generated.tables, path, generated.manifest)
+    return path
+
+
+@pytest.fixture(scope="session")
+def model_run(db_path: Path) -> ModelRun:
+    """Train and score once; must finish before any read-only connection is opened."""
+    return run_model_pipeline(db_path)
+
+
+@pytest.fixture(scope="session")
+def con(db_path: Path, model_run: ModelRun) -> Iterator[duckdb.DuckDBPyConnection]:
     connection = connect(db_path, read_only=True)
     yield connection
     connection.close()

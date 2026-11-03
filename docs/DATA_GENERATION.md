@@ -39,7 +39,7 @@ simulated, then **censored at the snapshot**: events after it are removed. So:
 | `fact_lead` | 59,459 | Volume per intake × city, monthly seasonality, channel, first-response time, then a 3-step funnel (contacted → shortlisted → booked). |
 | `fact_booking` | 18,333 | Property chosen near the student's budget; tenancy, rent, GBV, commission (rate by operator type, an assumption); deposit; visa status. |
 | `fact_cancellation` | 5,134 | Competing-risk model (below): reason, timing before move-in, refund. |
-| `fact_interaction` | 144,459 | First response plus follow-ups on leads; post-booking touches until move-in. |
+| `fact_interaction` | 155,338 | First response plus follow-ups on leads, post-booking touches until move-in, and a pre-arrival check-in for students who arrive. Simulated over each full lifecycle, then censored at the snapshot. |
 
 `meta_build` holds the snapshot date, seed and generator version. Schema: `sql/schema/01_tables.sql`.
 
@@ -76,7 +76,7 @@ over clean bookings.
 |---|---|---|---|
 | 1 | Unresolved visa → much higher cancellation, strongest for Nigeria and Pakistan | `e1_visa`: visa_refused intensity by source country × status multiplier (not_applied 1.6, pending 1.0, granted 0.08) | Cancellation: not_applied 40.9%, pending 31.3%, granted 20.4%. Visa-refusal cancellations as a share of visa-required bookings: Pakistan 19.0%, Nigeria 18.1%, India 8.8%, China 3.1%, USA 1.9% |
 | 2 | No deposit → higher cancellation | `e2_no_deposit_multiplier` = 1.9 on non-visa reasons | 38.9% without deposit vs 26.4% with |
-| 3 | Booked > 180 days early → cancel more (shopping around); < 30 days → least | `e3_booking_lead_time` multipliers on found_cheaper, duplicate_booking, changed_plans | <30 d 15.3% · 30–89 d 22.1% · 90–179 d 28.8% · 180+ d 41.8% |
+| 3 | Booked > 180 days early → cancel more (shopping around); < 30 days → least | `e3_booking_lead_time` multipliers on found_cheaper, duplicate_booking, changed_plans; those reasons are timed early in the booking window | <30 d 15.3% · 30–89 d 22.1% · 90–179 d 28.8% · 180+ d 41.8%. Among bookings still alive 72 days before move-in, the direction flips (FINDINGS §3) |
 | 4 | First response > 240 min → lower conversion | `e4_slow_response` logit penalties on shortlist and booking steps | Lead→booking 18.8% (slow) vs 35.6% |
 | 5 | Ambassador and partner consultancy convert best, paid search worst | `e5_channel_logit` | Ambassador 38.6%, partner consultancy 36.9%, referral 34.2%, organic 30.6%, loan partner 30.3%, paid search 23.4% |
 | 6 | PG demand softens in 2025-26, more in non-London UK | `e6_pg_demand_multiplier` thins PG leads | PG bookings 2024-25 → 2025-26: UK non-London 1,349 → 982 (−27%), London 552 → 537 (−3%), AU/IE 1,173 → 1,192 |
@@ -111,9 +111,19 @@ Not every null is a defect. 3,617 leads were never contacted, so their missing f
 
 ## Leakage trap (ADR-016)
 
-Students who will later cancel reply less to post-booking calls and messages. These interactions are
-legitimate features **as of a scoring date**. But if a model uses interactions logged *after* that date,
-it sees the future. Phase 4's leakage test must catch this.
+Two signals, one legitimate and one not:
+
+- **Engagement (legitimate as of a scoring date):** students who will later cancel answer fewer post-booking
+  calls and messages (38% vs 62% positive outcomes).
+- **Pre-arrival check-in (leaky):** in the last 14 days before move-in, every student who is actually arriving
+  gets a check-in call. Like a real CRM process event, it only exists because of the outcome.
+
+A model that uses interactions after its as-of date sees this check-in. On validation, PR-AUC jumps from
+0.347 to 0.715 (docs/FINDINGS.md §4).
+
+**The oracle check.** Because the data is synthetic, the generator also returns, in memory only, how each
+open Jan-2027 booking really ends (`GeneratedData.hidden_truth`). It is never written to disk or to the
+database. `tests/test_model.py` uses it to check the scores against the real future.
 
 ## Limitations
 

@@ -135,3 +135,27 @@ were agreed in Phase 0 (2026-11-03).
   `assumptions.yaml` at build time.
 - **Consequences:** Two independent implementations must agree (`tests/test_sql.py`), and there is still
   one place to change an assumption.
+
+**ADR-016 amendment (Phase 4):** The engagement signal alone barely leaked, because it is the same before and
+after the as-of point (the leaky demo scored PR-AUC 0.324 vs 0.347 honest). A pre-arrival check-in touch,
+logged only for students who arrive, now makes the trap real (leaky PR-AUC 0.715).
+
+### ADR-019 — Cancellation model: logistic regression, chosen on validation, refit for scoring
+- **Context:** CLAUDE.md §7: LR baseline plus HistGradientBoosting, time-based split, pick by PR-AUC.
+- **Decision:** Fit both on Sep-2024 to Jan-2026; pick on Sep-2026 PR-AUC (LR 0.347 vs HGB 0.315); confirm on a
+  Jan-2026 backtest because the open intake is a January one. Then refit the chosen model on all closed
+  intakes and score Jan-2027 as of the snapshot. `days_since_booking` is excluded because it equals days
+  before move-in minus a constant (the two had identical importance). Evaluation tables (`model_*`) are
+  written to DuckDB for the app.
+- **Consequences:** An interpretable model wins, so reason codes and the coefficients tell the same story.
+  The refit model has no held-out score of its own; the validation and backtest numbers stand in for it,
+  and the oracle check confirms them on the open intake.
+
+### ADR-020 — Action-queue reason codes follow the model, not intuition
+- **Context:** CLAUDE.md's example reason code includes "booked 7 months early". Among bookings alive 72
+  days before move-in, early bookers are lower risk (FINDINGS §3). Most agents have more than a day of
+  backlog this far out, so an absolute load flag fired on 59% of the queue.
+- **Decision:** Reason codes are visa pending/not applied, no deposit, no reply since booking, agent
+  overloaded (≥ 1.5x team load) and rent over budget. "Booked N months early" is dropped.
+- **Consequences:** The overload flag now marks exactly agents 10 and 13. Codes point agents at what to
+  talk about.

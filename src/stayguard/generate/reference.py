@@ -242,8 +242,11 @@ OTHER_REFUND_OPTIONS: tuple[tuple[float, ...], tuple[float, ...]] = ((0.0, 0.5),
 LEAD_EXTRA_TOUCHES_MEAN = 1.2
 BOOKING_TOUCHES_MEAN = 1.6
 POSITIVE_OUTCOME_PROB = 0.62
-# Students who will cancel engage less. Usable only "as of" a scoring date (leakage trap, ADR-016).
+# Students who will cancel engage less: a legitimate signal "as of" a scoring date.
 POSITIVE_OUTCOME_PROB_WILL_CANCEL = 0.38
+# Pre-arrival check-in in the last days before move-in, only for students who arrive (ADR-016).
+PRE_ARRIVAL_CHECK_IN_DAYS = 14
+PRE_ARRIVAL_POSITIVE_PROB = 0.9
 TOUCH_TYPES: tuple[str, ...] = ("call", "whatsapp", "email")
 TOUCH_TYPE_MIX_BY_GROUP: dict[str, tuple[float, ...]] = {
     "south_asia_africa": (0.30, 0.55, 0.15),

@@ -1,11 +1,11 @@
--- Baseline cancellation scores for open bookings (ADR-017). Phase 4's ML model replaces this
--- table; the baseline stays as the benchmark the model must beat.
+-- Baseline cancellation scores for open bookings (ADR-017). The build stores this query's result
+-- as scored_bookings_baseline (kept as the benchmark) and as the initial scored_bookings, which
+-- the Phase 4 model (`python -m stayguard.model`) then replaces.
 --
 -- Survival-aware (ADR-005): every open booking has already survived to the snapshot, which is
 -- `days_left` days before its move-in. So we learn from closed-intake bookings that were still
 -- alive at the same point before THEIR move-in, and ask how many cancelled after that point.
 
-CREATE OR REPLACE TABLE scored_bookings AS
 WITH horizon AS (
     SELECT
         m.snapshot_date,

@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -72,6 +72,9 @@ class GeneratedData:
 
     tables: dict[str, pd.DataFrame]
     manifest: dict[str, Any]
+    # The future outcome of each open booking (booking_id, will_cancel). Only knowable because the
+    # data is synthetic; kept in memory for the model's oracle test, never written to disk or DB.
+    hidden_truth: pd.DataFrame = field(default_factory=pd.DataFrame, repr=False)
 
 
 def fingerprint(df: pd.DataFrame) -> str:
@@ -107,6 +110,9 @@ def generate(seed: int | None = None, scale: float = 1.0) -> GeneratedData:
         rngs["bookings"], assumptions, leads, properties, cities
     )
     interactions = build_interactions(rngs["interactions"], assumptions, leads, bookings)
+    hidden_truth = bookings.loc[
+        bookings["status"] == "open", ["booking_id", "_will_cancel"]
+    ].rename(columns={"_will_cancel": "will_cancel"})
     bookings, cancellations, planted = plant_all(
         rngs["data_issues"], assumptions, leads, bookings, cancellations
     )
@@ -135,7 +141,9 @@ def generate(seed: int | None = None, scale: float = 1.0) -> GeneratedData:
         "fingerprints": {name: fingerprint(df) for name, df in tables.items()},
         "generation_seconds": round(time.perf_counter() - started, 2),
     }
-    return GeneratedData(tables=tables, manifest=manifest)
+    return GeneratedData(
+        tables=tables, manifest=manifest, hidden_truth=hidden_truth.reset_index(drop=True)
+    )
 
 
 def write_raw(data: GeneratedData, raw_dir: Path) -> None:

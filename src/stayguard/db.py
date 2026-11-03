@@ -77,7 +77,9 @@ def build_database(
             con.execute(f"INSERT INTO {name} BY NAME SELECT * FROM staging")
             con.unregister("staging")
         con.execute((sql_dir / VIEWS_SQL).read_text(encoding="utf-8"))
-        con.execute((sql_dir / BASELINE_SCORES_SQL).read_text(encoding="utf-8"))
+        baseline = (sql_dir / BASELINE_SCORES_SQL).read_text(encoding="utf-8").rstrip().rstrip(";")
+        con.execute(f"CREATE TABLE scored_bookings_baseline AS {baseline}")
+        con.execute("CREATE TABLE scored_bookings AS SELECT * FROM scored_bookings_baseline")
         con.execute("CHECKPOINT")
     finally:
         con.close()

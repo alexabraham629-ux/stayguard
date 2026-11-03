@@ -227,10 +227,9 @@ def _run_funnel(
     leads["lost_reason"] = lost_reason
     leads["_overloaded"] = is_overloaded
     leads["_booked_at"] = booked_at.where(booked_obs)
-    # When the lead's pre-booking conversation ends (used for interaction timestamps).
-    leads["_lead_end"] = (
-        booked_at.where(booked_obs, lost_at.where(lost_obs, snapshot)).clip(upper=snapshot)
-    ).where(contacted_obs)
+    # When the lead's pre-booking conversation really ends, even if that is after the snapshot.
+    # Interaction timestamps are spread over this full window and censored later (ADR-015).
+    leads["_lead_end"] = booked_at.where(booked, lost_at).where(contacted_obs)
     return leads
 
 

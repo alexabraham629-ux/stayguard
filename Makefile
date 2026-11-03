@@ -2,16 +2,20 @@
 # cmd.exe (GNU make on Windows) and sh (macOS/Linux). See ADR-003.
 
 .DEFAULT_GOAL := help
-.PHONY: help setup data quality test app export lint format reqs
+.PHONY: help setup data model quality test app export lint format reqs
 
 help:
-	@echo Targets: setup data quality test app export lint format reqs
+	@echo Targets: setup data model quality test app export lint format reqs
 
 setup:  ## create .venv with Python 3.12 and install all dependencies from uv.lock
 	uv sync
 
-data:  ## generate synthetic data, build data/stayguard.duckdb, print the quality report
+data:  ## generate synthetic data, build data/stayguard.duckdb, train and score the model
 	uv run python -m stayguard.generate
+	uv run python -m stayguard.model
+
+model:  ## re-train, evaluate and re-score on the existing database
+	uv run python -m stayguard.model
 
 quality:  ## re-run the data-quality report on the existing database
 	uv run python -m stayguard.quality.checks

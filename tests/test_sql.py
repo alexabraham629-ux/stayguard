@@ -308,10 +308,11 @@ def test_action_queue_respects_capacity(q, data):
 
 
 def test_baseline_scores_cover_open_bookings_and_rank_risk(con, data):
-    scores = con.execute("SELECT p_cancel, model_version FROM scored_bookings").df()
+    scores = con.execute("SELECT booking_id, p_cancel FROM scored_bookings_baseline").df()
     assert len(scores) == data.bookings["is_open"].sum()
     assert scores["p_cancel"].between(0, 1).all()
-    open_b = data.bookings.loc[data.bookings["is_open"]]
+    open_b = data.bookings.loc[data.bookings["is_open"]].drop(columns="p_cancel")
+    open_b = open_b.merge(scores, on="booking_id")
     risky = open_b.loc[
         open_b["visa_status_at_booking"].isin(["pending", "not_applied"]) & ~open_b["deposit_paid"],
         "p_cancel",

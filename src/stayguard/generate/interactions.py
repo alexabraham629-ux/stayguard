@@ -83,12 +83,10 @@ def build_interactions(
     lead_touches.loc[first, "ts"] = contacted["contacted_at"].to_numpy()
     lead_touches["lead_id"] = contacted["lead_id"].to_numpy()[lead_touches["_owner_row"]]
 
-    end = (
-        bookings["_true_cancelled_at"]
-        .fillna(bookings["_intake_start"])
-        .clip(upper=bookings["_intake_start"])
-        .clip(upper=snapshot)
-    )
+    # Post-booking touches over the booking's FULL life (to cancellation or move-in), then
+    # censored at the snapshot. Clipping the window at the snapshot instead would cram an open
+    # booking's touches into its first weeks and make open bookings look unlike history.
+    end = bookings["_true_cancelled_at"].fillna(bookings["_intake_start"])
     rate = np.where(bookings["_overloaded"], follow_up, 1.0)
     booking_counts = rng.poisson(ref.BOOKING_TOUCHES_MEAN * rate)
     positive = np.where(
@@ -99,7 +97,22 @@ def build_interactions(
     booking_touches = _touches(rng, bookings, bookings["booked_at"], end, booking_counts, positive)
     booking_touches["booking_id"] = bookings["booking_id"].to_numpy()[booking_touches["_owner_row"]]
 
-    interactions = pd.concat([lead_touches, booking_touches], ignore_index=True)
+    # Pre-arrival check-in: logged only for students who are actually moving in. A real process
+    # event that is tied to the outcome, so it is the leakage trap (ADR-016).
+    arriving = bookings.loc[~bookings["_will_cancel"]].reset_index(drop=True)
+    check_in_start = arriving["_intake_start"] - pd.Timedelta(days=ref.PRE_ARRIVAL_CHECK_IN_DAYS)
+    check_ins = _touches(
+        rng,
+        arriving,
+        check_in_start,
+        arriving["_intake_start"],
+        np.ones(len(arriving), dtype=int),
+        np.full(len(arriving), ref.PRE_ARRIVAL_POSITIVE_PROB),
+    )
+    check_ins["booking_id"] = arriving["booking_id"].to_numpy()[check_ins["_owner_row"]]
+
+    interactions = pd.concat([lead_touches, booking_touches, check_ins], ignore_index=True)
+    interactions = interactions.loc[interactions["ts"] <= snapshot]
     interactions = interactions.sort_values("ts", kind="mergesort").reset_index(drop=True)
     interactions["interaction_id"] = np.arange(1, len(interactions) + 1, dtype=np.int64)
     interactions["lead_id"] = interactions["lead_id"].astype("Int64")

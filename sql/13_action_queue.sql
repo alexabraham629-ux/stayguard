@@ -8,6 +8,29 @@
 WITH settings AS (
     SELECT value AS save_rate FROM meta_assumption WHERE name = 'intervention_save_rate'
 ),
+engagement AS (
+    -- Post-booking contact so far (all interactions are on or before the snapshot).
+    SELECT
+        booking_id,
+        COUNT(*)                                                    AS touches,
+        COUNT(*) FILTER (WHERE outcome IN ('connected', 'replied')) AS positive_touches
+    FROM fact_interaction
+    WHERE booking_id IS NOT NULL
+    GROUP BY booking_id
+),
+agent_days AS (
+    SELECT b.agent_id, a.team, COUNT(*) / a.max_daily_capacity AS load_days
+    FROM v_bookings_gbp AS b
+    JOIN dim_agent AS a ON a.agent_id = b.agent_id
+    WHERE b.is_open
+    GROUP BY b.agent_id, a.team, a.max_daily_capacity
+),
+agent_backlog AS (
+    -- Relative to the team: most agents carry more than a day of backlog this far from move-in,
+    -- so the risk signal (and the model feature) is load compared with teammates.
+    SELECT agent_id, load_days / AVG(load_days) OVER (PARTITION BY team) AS load_vs_team
+    FROM agent_days
+),
 open_scored AS (
     SELECT
         b.booking_id,
@@ -24,28 +47,34 @@ open_scored AS (
         b.commission_gbp * s.p_cancel AS expected_loss_gbp,
         b.visa_status_at_booking,
         b.deposit_paid,
-        b.days_booked_before_intake,
         b.weekly_rent_gbp,
-        st.budget_weekly_gbp
+        st.budget_weekly_gbp,
+        COALESCE(e.touches, 0)          AS touches,
+        COALESCE(e.positive_touches, 0) AS positive_touches,
+        ab.load_vs_team                 AS agent_load_vs_team
     FROM v_bookings_gbp AS b
     JOIN scored_bookings AS s ON s.booking_id = b.booking_id
     JOIN dim_agent AS a ON a.agent_id = b.agent_id
     JOIN dim_student AS st ON st.student_id = b.student_id
+    JOIN agent_backlog AS ab ON ab.agent_id = b.agent_id
+    LEFT JOIN engagement AS e ON e.booking_id = b.booking_id
     WHERE b.is_open
 ),
 with_reasons AS (
     SELECT
         *,
-        -- Plain-English reason codes; concat_ws skips the NULLs from flags that do not apply.
+        -- Plain-English reason codes for the drivers the model weighs most (docs/FINDINGS.md).
+        -- concat_ws skips the NULLs from flags that do not apply.
+        -- Not "booked N months early": among bookings still alive this close to move-in, early
+        -- bookers are LOWER risk (their shopping-around cancellations happen soon after booking).
         NULLIF(concat_ws(' + ',
             CASE visa_status_at_booking
                 WHEN 'pending'     THEN 'visa pending'
                 WHEN 'not_applied' THEN 'visa not applied'
             END,
             CASE WHEN NOT deposit_paid THEN 'no deposit' END,
-            CASE WHEN days_booked_before_intake >= 180
-                 THEN 'booked ' || CAST(ROUND(days_booked_before_intake / 30.4) AS INTEGER) || ' months early'
-            END,
+            CASE WHEN touches > 0 AND positive_touches = 0 THEN 'no reply since booking' END,
+            CASE WHEN agent_load_vs_team >= 1.5 THEN 'agent overloaded' END,
             CASE WHEN weekly_rent_gbp > budget_weekly_gbp * 1.10 THEN 'rent over budget' END
         ), '') AS reason_codes
     FROM open_scored
