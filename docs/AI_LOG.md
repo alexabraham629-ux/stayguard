@@ -75,3 +75,21 @@ Format:
 - Fix: dropped `days_since_booking`.
 - Lesson / guardrail added: features derived from the as-of horizon are reviewed for redundancy; noted in
   `features.py`.
+
+### 2026-11-03 — Action-queue warning paired an agent with the wrong team
+- What the AI produced: the overflow warning said most overflow sat with Gillian Jordan (UK North), then
+  advised "reassign within ANZ (8 spare calls)". The advice came from the first overflow row, not from
+  Gillian's own rows.
+- How it was caught (manual review): reading the page in the browser; the agent and team did not match.
+- Fix: the advice now comes from the most-overflowing agent's own rows ("reassign within UK North (48
+  spare calls today)").
+- Lesson / guardrail added: any sentence that joins two facts must take both from the same row or
+  aggregate. Checked when reviewing each page.
+
+### 2026-11-03 — Chart title overclaimed a weak effect
+- What the AI produced: the budget-band chart was titled "...it shows up in cancellations instead",
+  implying a strong effect. Cancellations only move from 29.9% to 27.6% across budget bands.
+- How it was caught (manual review): comparing the title with the plotted values.
+- Fix: the title now states the numbers ("lower-budget students cancel slightly more (29.9% vs 27.6%)").
+- Lesson / guardrail added: insight titles are computed from the data and quote the numbers they rely
+  on, rather than characterising them.

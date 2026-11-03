@@ -34,7 +34,7 @@ class EffectCheck:
     subset: str | None = None  # pandas query selecting the rows the check applies to
 
 
-def _with(X: pd.DataFrame, overrides: dict[str, Any]) -> pd.DataFrame:
+def with_overrides(X: pd.DataFrame, overrides: dict[str, Any]) -> pd.DataFrame:
     """Copy of X with the given columns set to one value (categories preserved)."""
     X = X.copy()
     for col, value in overrides.items():
@@ -91,8 +91,8 @@ def recovery_table(model: Any, X: pd.DataFrame) -> pd.DataFrame:
     rows = []
     for check in EFFECT_CHECKS:
         subset = X.query(check.subset) if check.subset else X
-        p_ref = model.predict_proba(_with(subset, check.reference)[FEATURES])[:, 1].mean()
-        p_new = model.predict_proba(_with(subset, check.changed)[FEATURES])[:, 1].mean()
+        p_ref = model.predict_proba(with_overrides(subset, check.reference)[FEATURES])[:, 1].mean()
+        p_new = model.predict_proba(with_overrides(subset, check.changed)[FEATURES])[:, 1].mean()
         went_up = p_new > p_ref
         rows.append(
             {

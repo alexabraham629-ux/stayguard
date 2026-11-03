@@ -32,6 +32,11 @@ Phase 6 uses the same functions.
 
 ENC + Revenue at Risk = booked commission on open bookings (tested).
 
+| Metric | Definition | Formula | Scope | `metrics.py` | SQL | Owner |
+|---|---|---|---|---|---|---|
+| **Live commission loss share** | Of the commission still live N days before move-in (N = days from snapshot to the open intake), the share lost after that point | Closed intake: Σ commission of live bookings that cancelled ÷ Σ commission of live bookings. Open intake: Revenue at Risk ÷ open commission | Per intake | `live_commission_loss_share` | `15_commission_by_intake` | Finance |
+| **Same-point booked commission** | Commission booked by the equivalent of today's date in an earlier cycle, for like-for-like comparisons (ADR-021) | Σ commission where days_booked_before_intake ≥ N | Per intake | `booked_commission_gbp(..., min_days_before_intake=N)` | `15_commission_by_intake` | Finance |
+
 ## Cancellation
 
 | Metric | Definition | Formula | Scope | `metrics.py` | SQL | Owner |

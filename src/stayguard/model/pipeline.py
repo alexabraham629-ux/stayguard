@@ -21,6 +21,7 @@ import numpy as np
 import pandas as pd
 from sklearn.base import clone
 
+from stayguard.calendar import days_to_open_intake
 from stayguard.config import DB_PATH, load_assumptions
 from stayguard.db import connect
 from stayguard.model.baseline import SegmentRateBaseline
@@ -32,7 +33,7 @@ from stayguard.model.evaluate import (
     lift_table,
 )
 from stayguard.model.features import FEATURES, assert_no_leakage, build_feature_frame
-from stayguard.model.recovery import recovery_table
+from stayguard.model.recovery import recovery_table, with_overrides
 from stayguard.model.train import MODEL_VERSIONS, make_candidates
 from stayguard.sql_runner import run_query
 
@@ -56,13 +57,6 @@ class ModelRun:
     scored: pd.DataFrame
     days_left: int
     seconds: float
-
-
-def days_to_open_intake(assumptions: dict[str, Any]) -> int:
-    """Days from the snapshot to the open intake's move-in (the as-of horizon)."""
-    snapshot = pd.Timestamp(assumptions["project"]["snapshot_date"])
-    starts = [pd.Timestamp(d) for d in assumptions["intakes"].values()]
-    return int((min(s for s in starts if s > snapshot) - snapshot).days)
 
 
 def _metrics_rows(model: str, dataset: str, metrics: dict[str, float]) -> list[dict[str, Any]]:
@@ -198,6 +192,10 @@ def run_model_pipeline(db_path: Path = DB_PATH) -> ModelRun:
             {
                 "booking_id": score["booking_id"].astype("int64").to_numpy(),
                 "p_cancel": final_model.predict_proba(score[FEATURES])[:, 1],
+                # Counterfactual for the What-If simulator: the same booking with a deposit paid.
+                "p_cancel_if_deposit": final_model.predict_proba(
+                    with_overrides(score, {"deposit_paid": 1.0})[FEATURES]
+                )[:, 1],
                 "model_version": model_version,
                 "scored_as_of": pd.Timestamp(assumptions["project"]["snapshot_date"]).date(),
             }

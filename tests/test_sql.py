@@ -9,6 +9,7 @@ import re
 import pandas as pd
 import pytest
 
+from stayguard.calendar import days_to_open_intake, open_intake
 from stayguard.config import PROJECT_ROOT, load_assumptions
 from stayguard.metrics import (
     Filters,
@@ -17,6 +18,7 @@ from stayguard.metrics import (
     cancellation_rate,
     expected_net_commission_gbp,
     lead_to_booking_conversion,
+    live_commission_loss_share,
     load_metric_data,
     realised_commission_gbp,
     revenue_at_risk_gbp,
@@ -53,8 +55,10 @@ def closed(df: pd.DataFrame) -> pd.DataFrame:
 # --- House rules for every file -----------------------------------------------------------------
 
 
-def test_library_has_all_fourteen_queries():
-    assert [name[:2] for name in QUERIES] == [f"{i:02d}" for i in range(1, 15)]
+def test_library_is_numbered_without_gaps():
+    """The 14 required queries plus the app's additions, numbered 01..N with no gaps."""
+    assert len(QUERIES) >= 14
+    assert [name[:2] for name in QUERIES] == [f"{i:02d}" for i in range(1, len(QUERIES) + 1)]
 
 
 @pytest.mark.parametrize("name", QUERIES)
@@ -321,3 +325,49 @@ def test_baseline_scores_cover_open_bookings_and_rank_risk(con, data):
         (open_b["visa_status_at_booking"] == "granted") & open_b["deposit_paid"], "p_cancel"
     ].mean()
     assert risky > safe
+
+
+def test_commission_by_intake_matches_metrics(q, data):
+    df = q("15_commission_by_intake").set_index("intake")
+    days_left = days_to_open_intake(data.assumptions)
+    for intake, row in df.iterrows():
+        f = Filters(intakes=(intake,))
+        assert row["booked_commission_gbp"] == pytest.approx(
+            booked_commission_gbp(data, f), rel=1e-6
+        )
+        assert row["realised_commission_gbp"] == pytest.approx(
+            realised_commission_gbp(data, f), rel=1e-6, abs=0.01
+        )
+        assert row["booked_commission_same_point_gbp"] == pytest.approx(
+            booked_commission_gbp(data, f, min_days_before_intake=days_left), rel=1e-6
+        )
+        assert row["live_commission_loss_share"] == pytest.approx(
+            live_commission_loss_share(data, Filters(), intake, days_left), rel=1e-6
+        )
+        if row["is_closed"]:
+            assert row["cancellation_rate"] == pytest.approx(cancellation_rate(data, f))
+            assert row["conversion_rate"] == pytest.approx(lead_to_booking_conversion(data, f))
+    now = open_intake(data.assumptions)
+    assert df.loc[now, "expected_net_commission_gbp"] == pytest.approx(
+        expected_net_commission_gbp(data, Filters(intakes=(now,))), rel=1e-6
+    )
+    assert df.loc[now, "comparable_intake"] == "Jan-2026"
+
+
+def test_budget_bands_reconcile(q, data):
+    df = q("16_budget_band_vs_conversion")
+    assert df["leads"].sum() == len(closed(data.leads))
+    assert df["booked_leads"].sum() / df["leads"].sum() == pytest.approx(
+        lead_to_booking_conversion(data), rel=1e-12
+    )
+    assert df["bookings"].sum() == len(closed(data.bookings))
+
+
+def test_lead_seasonality_shares(q, data):
+    df = q("17_lead_seasonality")
+    assert df["leads"].sum() == len(data.leads)
+    totals = df.groupby("intake")["share_of_intake_pct"].sum()
+    assert ((totals - 100).abs() < 0.1).all()
+    sep = df.loc[df["is_closed_intake"] & (df["intake_month"] == "Sep")]
+    peak = sep.groupby("month_label")["share_of_intake_pct"].mean().idxmax()
+    assert peak in {"Feb", "Mar", "Apr", "May", "Jun", "Jul"}

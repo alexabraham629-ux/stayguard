@@ -59,10 +59,19 @@ class MetricData:
 
 def load_metric_data(con: duckdb.DuckDBPyConnection) -> MetricData:
     """Read the base frames through a (read-only) connection."""
+    score_columns = {
+        r[0]
+        for r in con.execute(
+            "SELECT column_name FROM information_schema.columns "
+            "WHERE table_name = 'scored_bookings'"
+        ).fetchall()
+    }
+    # The deposit counterfactual exists once the Phase 4 model has scored (not for the baseline).
+    extra = ", s.p_cancel_if_deposit" if "p_cancel_if_deposit" in score_columns else ""
     bookings = con.execute(
-        """SELECT b.*, s.p_cancel
-           FROM v_bookings_gbp AS b
-           LEFT JOIN scored_bookings AS s ON s.booking_id = b.booking_id"""
+        f"""SELECT b.*, s.p_cancel{extra}
+            FROM v_bookings_gbp AS b
+            LEFT JOIN scored_bookings AS s ON s.booking_id = b.booking_id"""
     ).df()
     leads = con.execute(
         """SELECT l.*, c.city, c.country, i.is_closed AS is_closed_intake
@@ -90,14 +99,26 @@ def gbv_gbp(d: MetricData, f: Filters = ALL) -> float:
     return float(f.apply(d.bookings)["gbv_gbp"].sum())
 
 
-def booked_commission_gbp(d: MetricData, f: Filters = ALL) -> float:
+def _booked_by(b: pd.DataFrame, min_days_before_intake: int | None) -> pd.DataFrame:
+    """Like-for-like: keep bookings made at least N days before move-in ("same point" in the
+    cycle as today, when N is the days left to the open intake)."""
+    if min_days_before_intake is None:
+        return b
+    return b.loc[b["days_booked_before_intake"] >= min_days_before_intake]
+
+
+def booked_commission_gbp(
+    d: MetricData, f: Filters = ALL, min_days_before_intake: int | None = None
+) -> float:
     """GBV x commission rate (rate by operator type is an ASSUMPTION), all clean bookings."""
-    return float(f.apply(d.bookings)["commission_gbp"].sum())
+    return float(_booked_by(f.apply(d.bookings), min_days_before_intake)["commission_gbp"].sum())
 
 
-def realised_commission_gbp(d: MetricData, f: Filters = ALL) -> float:
+def realised_commission_gbp(
+    d: MetricData, f: Filters = ALL, min_days_before_intake: int | None = None
+) -> float:
     """Commission on bookings that moved in."""
-    b = f.apply(d.bookings)
+    b = _booked_by(f.apply(d.bookings), min_days_before_intake)
     return float(b.loc[b["is_moved_in"], "commission_gbp"].sum())
 
 
@@ -111,6 +132,28 @@ def revenue_at_risk_gbp(d: MetricData, f: Filters = ALL) -> float:
     """Sum of commission x p_cancel over open bookings."""
     b = _open(f.apply(d.bookings))
     return float((b["commission_gbp"] * b["p_cancel"]).sum())
+
+
+def live_commission_loss_share(d: MetricData, f: Filters, intake: str, days_left: int) -> float:
+    """Share of the commission still live `days_left` days before move-in that is lost after it.
+
+    Closed intake: what actually happened. Open intake: what the model expects
+    (Revenue at Risk / open commission). Makes Revenue at Risk comparable across intakes.
+    """
+    b = f.apply(d.bookings)
+    b = b.loc[b["intake"] == intake]
+    if len(b) == 0:
+        return float("nan")
+    if not b["is_closed_intake"].iloc[0]:
+        live = b.loc[b["is_open"]]
+        return float(
+            (live["commission_gbp"] * live["p_cancel"]).sum() / live["commission_gbp"].sum()
+        )
+    as_of = pd.Timestamp(b["intake_start_date"].iloc[0]) - pd.Timedelta(days=days_left)
+    cancelled_before = b["is_cancelled"] & (b["cancelled_at"] < as_of)
+    alive = (b["booked_at"] < as_of) & ~cancelled_before
+    lost_after = alive & b["is_cancelled"]
+    return float(b.loc[lost_after, "commission_gbp"].sum() / b.loc[alive, "commission_gbp"].sum())
 
 
 def saveable_revenue_gbp(

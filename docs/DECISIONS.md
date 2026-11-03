@@ -159,3 +159,35 @@ logged only for students who arrive, now makes the trap real (leaky PR-AUC 0.715
   overloaded (≥ 1.5x team load) and rent over budget. "Booked N months early" is dropped.
 - **Consequences:** The overload flag now marks exactly agents 10 and 13. Codes point agents at what to
   talk about.
+
+### ADR-021 — Executive KPIs compare like with like
+- **Context:** CLAUDE.md asks for KPI cards with a delta vs the last comparable intake. The open intake
+  (Jan-2027) is 72 days from move-in, so comparing it with a complete intake would always look like a collapse.
+- **Decision:** Money cards compare Jan-2027 with Jan-2026 *at the same point in its cycle*: bookings
+  made at least 72 days before move-in. Revenue at Risk is compared as a share. The share of commission
+  still live at this point that we expect to lose is set against the share Jan-2026 actually lost from the
+  same point (`live_commission_loss_share`). Rate cards use the latest intake that has moved in (Sep-2026)
+  vs the year before. All of this is in `sql/15_commission_by_intake.sql` and `stayguard.kpis`.
+- **Consequences:** Every delta is a fair comparison, and the tooltip on each card says what it compares
+  against. The intake filter does not apply to the cards, which are pinned to their intakes, and the page
+  says so.
+
+### ADR-022 — App filters applied at each query's grain, and said out loud
+- **Context:** The SQL library is unparameterised (one file per business question, tested as-is), but the
+  app has global filters.
+- **Decision:** KPI cards and the simulator use `metrics.py` with `Filters` (every filter applies). Charts
+  filter each query's result on whichever filter columns its grain has. Each "How this number is
+  calculated" panel lists the filters applied and those that could not be. Filter values persist across
+  pages through session state.
+- **Consequences:** No number silently ignores a filter. Some charts (agent leaderboard, budget bands)
+  are all-markets by design and say so.
+
+### ADR-023 — What-if simulator: three levers, applied in order, all assumptions shown
+- **Context:** CLAUDE.md asks for queue share, save rate, deposit policy and response SLA → projected ENC.
+- **Decision:** Levers are applied in sequence so nothing is double-counted:
+  1. Deposits: the risk of chased bookings falls to the model's counterfactual `p_cancel_if_deposit`.
+  2. Calls: the top share of remaining expected loss × save rate.
+  3. SLA: pipeline leads × extra share answered in time × the historical conversion gap × average
+     commission × survival.
+- **Consequences:** Levers 1 and 3 read causal effects off observational data, and the page says so next to
+  the result. A test pins the calls lever to `metrics.saveable_revenue_gbp`.

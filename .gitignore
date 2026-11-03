@@ -26,3 +26,6 @@ data/exports/*
 Thumbs.db
 .vscode/
 .idea/
+
+# Local Claude Code preview config
+.claude/
