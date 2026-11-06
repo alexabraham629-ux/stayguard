@@ -3,7 +3,7 @@
 **Live demo:** [stayguard-booking-risk.streamlit.app](https://stayguard-booking-risk.streamlit.app) (synthetic data; the first visit after a quiet spell can take a minute to wake up)
 <!-- Loom walkthrough link goes here once recorded. -->
 
-**Built by Alex Abraham — MBA Business Analytics** · Code: [github.com/alexabraham629-ux/stayguard](https://github.com/alexabraham629-ux/stayguard) · [MIT licence](LICENSE)
+**Built by Alex Abraham — MBA Business Analytics** · [LinkedIn](https://www.linkedin.com/in/alex-abraham629) · Code: [github.com/alexabraham629-ux/stayguard](https://github.com/alexabraham629-ux/stayguard) · [MIT licence](LICENSE)
 
 StayGuard forecasts how much of a student-housing marketplace's booked commission will actually land.
 It ranks which students booking managers should call today, and shows which cities, channels and intakes leak revenue.
