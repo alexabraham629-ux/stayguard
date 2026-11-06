@@ -16,8 +16,8 @@ database itself, in about 20 s behind a spinner (ADR-011), so no data files need
    print each `[first boot]` step.
 4. **Smoke-test the live URL.** Every page loads, the footer says *Synthetic data — portfolio project*,
    and Ask the Data shows the demo-mode banner.
-5. **Link it.** Replace the HTML comment at the top of the README with the app URL (and the Loom
-   walkthrough, once recorded). The About page already links to the GitHub repo.
+5. **Link it.** Put the app URL at the top of the README. The About page already links to the
+   GitHub repo.
 
 **If the app sits on a spinner after deploying:** open the app's **Manage app** logs. A healthy first
 boot prints `[first boot +Ns] …` lines and ends with `done`. On the first deploy (2026-11-04) no

@@ -1,7 +1,6 @@
 # StayGuard: Booking Risk Copilot
 
 **Live demo:** [stayguard-booking-risk.streamlit.app](https://stayguard-booking-risk.streamlit.app) (synthetic data; the first visit after a quiet spell can take a minute to wake up)
-<!-- Loom walkthrough link goes here once recorded. -->
 
 **Built by Alex Abraham — MBA Business Analytics** · [LinkedIn](https://www.linkedin.com/in/alex-abraham629) · Code: [github.com/alexabraham629-ux/stayguard](https://github.com/alexabraham629-ux/stayguard) · [MIT licence](LICENSE)
 
